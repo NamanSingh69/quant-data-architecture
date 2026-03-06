@@ -1,13 +1,152 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>quant-data-architecture</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quant Data Architecture Showcase</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      padding: 40px;
+      background: #1e293b;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      border: 1px solid #334155;
+      margin: 40px 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: #10b981;
+      font-size: 2.8rem;
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      background-color: #059669;
+      color: #fff;
+      border-radius: 999px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .card {
+      text-align: left;
+      background: #0f172a;
+      padding: 25px;
+      border-radius: 8px;
+      border-top: 4px solid #10b981;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .card h3 {
+      color: #6ee7b7;
+      margin-top: 0;
+      font-size: 1.3rem;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 10px;
+    }
+
+    .card p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .mermaid-container {
+      margin-top: 40px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <span class="badge">PROPRIETARY PROJECT</span>
+    <h1>Quantitative Data Pipeline Architecture</h1>
+    <p class="subtitle">This is a showcase of the high-level architecture for the Quant Data aggregator, part of the
+      <strong>"Exclude" Strategy</strong>.</p>
+    <p class="subtitle" style="font-size: 0.9rem; color: #64748b;">Source code and internal implementation details
+      remain strictly private.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>1. High-Frequency Ingestion</h3>
+        <p>Async Websocket handlers written in Rust/Go consume raw L2 order book data and tick-level trades from 10+
+          major CeFi and DeFi exchanges, tolerating severe burst loads during volatility spikes.</p>
+      </div>
+      <div class="card">
+        <h3>2. Kafka Event Streaming</h3>
+        <p>Data frames are pushed immediately onto partitioned Apache Kafka topics. The system utilizes exact-once
+          semantics (EOS) to ensure no duplicate ticks poison the downstream analytical windows.</p>
+      </div>
+      <div class="card">
+        <h3>3. Temporal OLAP Aggregation</h3>
+        <p>ClickHouse / DuckDB instances consume the Kafka streams continuously, rolling up raw ticks into sub-second,
+          1s, and 1m OHLCV bars while calculating rolling VWAP and cumulative volume delta (CVD).</p>
+      </div>
+      <div class="card">
+        <h3>4. Low-Latency Alpha Generation</h3>
+        <p>The system passes final aggregated tensors into highly quantized PyTorch/TensorRT inference engines executing
+          statistical arbitrage models to generate sub-5ms trade signals.</p>
+      </div>
+    </div>
+
+    <div class="mermaid-container">
+      <div class="mermaid">
+        flowchart LR
+        A((Exchanges)) -->|Tick Stream| B[Rust Ingestor]
+        B -->|Raw Schema| C[(Kafka Cluster)]
+        C -->|Consume| D{ClickHouse OLAP}
+        D -->|Calculate CVD, VWAP| D
+        D -->|Parquet| E[Temporal Feature Store]
+        E --> F[TensorRT Inference]
+        F -->|Alpha Signal| G((Trading VM))
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>
