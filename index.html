@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quant Data Architecture Showcase</title>
+  <title>Zerodha Live Trading Engine Showcase</title>
   <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -34,7 +34,7 @@
     }
 
     h1 {
-      color: #10b981;
+      color: #f59e0b;
       font-size: 2.8rem;
       margin-bottom: 10px;
     }
@@ -51,7 +51,7 @@
       padding: 6px 12px;
       font-size: 0.85rem;
       font-weight: bold;
-      background-color: #059669;
+      background-color: #d97706;
       color: #fff;
       border-radius: 999px;
       margin-bottom: 20px;
@@ -70,12 +70,12 @@
       background: #0f172a;
       padding: 25px;
       border-radius: 8px;
-      border-top: 4px solid #10b981;
+      border-top: 4px solid #f59e0b;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
     .card h3 {
-      color: #6ee7b7;
+      color: #fbbf24;
       margin-top: 0;
       font-size: 1.3rem;
       border-bottom: 1px solid #1e293b;
@@ -104,46 +104,46 @@
 
 <body>
   <div class="container">
-    <span class="badge">PROPRIETARY PROJECT</span>
-    <h1>Quantitative Data Pipeline Architecture</h1>
-    <p class="subtitle">This is a showcase of the high-level architecture for the Quant Data aggregator, part of the
-      <strong>"Exclude" Strategy</strong>.</p>
-    <p class="subtitle" style="font-size: 0.9rem; color: #64748b;">Source code and internal implementation details
-      remain strictly private.</p>
+    <span class="badge">LIVE EXECUTION ENGINE</span>
+    <h1>Zerodha Trading Integration</h1>
+    <p class="subtitle">Architecture of an automated algorithmic bridging layer that reconciles offline quantitative
+      signals with live brokerage portfolios via the Zerodha KiteConnect API.</p>
 
     <div class="grid">
       <div class="card">
-        <h3>1. High-Frequency Ingestion</h3>
-        <p>Async Websocket handlers written in Rust/Go consume raw L2 order book data and tick-level trades from 10+
-          major CeFi and DeFi exchanges, tolerating severe burst loads during volatility spikes.</p>
+        <h3>1. KiteConnect Integration</h3>
+        <p>A direct OAuth gateway to the Zerodha Kite API utilizing the <code>kiteconnect</code> Python client. It
+          continuously authenticates and fetches live market status, holdings, and intraday positions arrays.</p>
       </div>
       <div class="card">
-        <h3>2. Kafka Event Streaming</h3>
-        <p>Data frames are pushed immediately onto partitioned Apache Kafka topics. The system utilizes exact-once
-          semantics (EOS) to ensure no duplicate ticks poison the downstream analytical windows.</p>
+        <h3>2. Live State Reconciliation</h3>
+        <p>Matches real-time traded instrument tokens against offline machine learning output stored in
+          <code>trading_signals.csv</code>. The engine calculates realized and unrealized P/L by reconciling API-held
+          quantities against locally derived target exposures.</p>
       </div>
       <div class="card">
-        <h3>3. Temporal OLAP Aggregation</h3>
-        <p>ClickHouse / DuckDB instances consume the Kafka streams continuously, rolling up raw ticks into sub-second,
-          1s, and 1m OHLCV bars while calculating rolling VWAP and cumulative volume delta (CVD).</p>
+        <h3>3. Real-Time Price Polling</h3>
+        <p>Executes lightweight JSON requests to <code>kite.quote()</code> to fetch real-time bid/ask snapshots for
+          dynamic mark-to-market valuations, bypassing slow historical data endpoints when live trading is active.</p>
       </div>
       <div class="card">
-        <h3>4. Low-Latency Alpha Generation</h3>
-        <p>The system passes final aggregated tensors into highly quantized PyTorch/TensorRT inference engines executing
-          statistical arbitrage models to generate sub-5ms trade signals.</p>
+        <h3>4. Fallback Data Pipeline</h3>
+        <p>Implements an offline fallback mechanism: if the KiteConnect API rate limits are hit or the live ticker
+          socket drops, the system gracefully falls back to querying the latest Yahoo Finance datasets to estimate net
+          asset value.</p>
       </div>
     </div>
 
     <div class="mermaid-container">
       <div class="mermaid">
-        flowchart LR
-        A((Exchanges)) -->|Tick Stream| B[Rust Ingestor]
-        B -->|Raw Schema| C[(Kafka Cluster)]
-        C -->|Consume| D{ClickHouse OLAP}
-        D -->|Calculate CVD, VWAP| D
-        D -->|Parquet| E[Temporal Feature Store]
-        E --> F[TensorRT Inference]
-        F -->|Alpha Signal| G((Trading VM))
+        flowchart TD
+        A[Offline ML Signals CSV] --> B[Trading Engine Core]
+        C[Zerodha KiteConnect API] -->|Holdings & Positions| B
+        C -->|Live Quotes| B
+        B --> D{State Reconciliation}
+        D -->|Delta > Threshold| E[Order Execution Queue]
+        D -->|Hold| F[Update P/L Dashboard]
+        G[Yahoo Finance Fallback] -.->|API Down| B
       </div>
     </div>
   </div>
